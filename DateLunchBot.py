@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 week = datetime.date.today().isocalendar()[1] if (datetime.datetime.today().weekday() < 5) else (datetime.date.today().isocalendar()[1] + 1)
 
-restaurants = [{'type': 'unica', 'title':"Assarin", 'link': 'http://www.unica.fi/index.php?node_id=12533'},
+restaurants = [{'type': 'unica', 'title':"Assari", 'link': 'http://www.unica.fi/index.php?node_id=12533'},
                {'type': 'unica', 'title':"Delica", 'link': 'http://www.unica.fi/fi/ravintolat/delica/'},
                {'type': 'unica', 'title':"Galilei", 'link': 'http://www.unica.fi/fi/ravintolat/galilei/'},
                {'type': 'studentlunch', 'title':'Arken', 'link':'http://www.studentlunch.fi/se/lunchlistan/veckans-lista?id=1&year=2017&week=' + str(week)},
