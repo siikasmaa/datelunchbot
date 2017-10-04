@@ -19,7 +19,8 @@ restaurants = [{'type': 'unica', 'title':"Assarin Ullakko", 'link': 'http://www.
 restaurantMenus = [dict() for x in range(len(restaurants))]
 dayName = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
-
+#test
+ 
 def getMenu():
     for x in range(0, len(restaurants)): #Parser for Unica
         req = urllib2.Request(restaurants[x]['link'])
