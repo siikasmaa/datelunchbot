@@ -83,4 +83,4 @@ class InlineHandler(telepot.helper.InlineUserHandler, telepot.helper.AnswererMix
 
 TOKEN = sys.argv[1]
 bot = telepot.DelegatorBot(TOKEN, [pave_event_space()(per_inline_from_id(), create_open, InlineHandler, timeout=10),])
-bot.message_loop(run_forever='Listening ...')
+print("Listening...")
