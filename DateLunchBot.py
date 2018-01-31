@@ -5,6 +5,7 @@ import argparse
 import datetime
 import telepot
 import json
+import ast
 import sqlite3 as sql
 from telepot.loop import MessageLoop
 from telepot.delegate import per_inline_from_id, create_open, pave_event_space
@@ -27,7 +28,7 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
     def on_inline_query(self, msg):
         week = datetime.date.today().isocalendar()[1] if (datetime.datetime.today().weekday() < 5) else (datetime.date.today().isocalendar()[1] + 1)
         year = datetime.date.today().isocalendar()[0]
-        connection = 'SELECT MENU, PRICES, WEEKDAY, WEEK FROM {r} WHERE ID = {id}'
+        connection = 'SELECT MENU, WEEKDAY, WEEK FROM {r} WHERE ID = {id}'
 
         def compute_answer():
             c = sql.connect('menus.db')
@@ -39,8 +40,13 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             articles = []
             try:
                 for i in range(len(restaurants)):
+                    i=0
+                    lis = ""
                     cursor = conn.execute(connection.format(r=restaurants[i]['title'].encode('utf-8'),id=ide)).fetchall()
-                    articles.append({'type': 'article', 'id': restaurants[i]['id'], 'title': restaurants[i]['title'], 'thumb_url': restaurants[i]['thumb'], 'url': restaurants[i]['link'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][2] + ', week: ' + str(cursor[0][3]) + ' \n' + cursor[0][0].replace('|','\n\n')})
+                    for key, value in ast.literal_eval(cursor[0][0]).iteritems():
+                        lis += key + "\n " + value + "\n\n"
+                    articles.append({'type': 'article', 'id': restaurants[i]['id'], 'title': restaurants[i]['title'], 'thumb_url': restaurants[i]['thumb'], 'url': restaurants[i]['link'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
+                    print articles
             except Exception as e:
                 logging.error(e)
             c.close
