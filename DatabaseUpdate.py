@@ -51,11 +51,12 @@ def updateDb():
                 for menu in day.findAll('table', class_='week-list'):
                     try:
                         print "Inserting new rows"
-                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
+                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf-8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
                         foods = []
                         for food in menu.findAll('a'):
                             foods.append(food.get_text().encode('utf8').replace(";",""))
-                        conn.execute("UPDATE {r} SET MENU = {m},PRICES = {p} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf8'), m="'"+"|".join(foods)+"'", wd="'"+dayName[dayNr]+"'",p="'"+",".join(prices)+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
+                        foods = dict(zip(foods,prices))
+                        conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
                         dayNr += 1
                     except sql.OperationalError as e:
                         print e

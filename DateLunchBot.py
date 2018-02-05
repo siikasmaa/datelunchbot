@@ -40,13 +40,12 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             articles = []
             try:
                 for i in range(len(restaurants)):
-                    i=0
                     lis = ""
                     cursor = conn.execute(connection.format(r=restaurants[i]['title'].encode('utf-8'),id=ide)).fetchall()
                     for key, value in ast.literal_eval(cursor[0][0]).iteritems():
                         lis += key + "\n " + value + "\n\n"
-                    articles.append({'type': 'article', 'id': restaurants[i]['id'], 'title': restaurants[i]['title'], 'thumb_url': restaurants[i]['thumb'], 'url': restaurants[i]['link'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
-                    print articles
+                    articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'], 'thumb_url': restaurants[i]['thumb'], 'url': restaurants[i]['link'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
+                print articles
             except Exception as e:
                 logging.error(e)
             c.close
