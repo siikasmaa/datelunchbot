@@ -34,7 +34,7 @@ def updateDb():
                     for price in day.findAll('td', class_='price quiet'):
                         prices.append(unicode(price.string.strip().replace(";","").replace("\n", "").replace("	","")))
                     for menu in day.findAll('td', class_='lunch'):
-                        foods.append(unicode(menu.string.strip().replace(";","")))
+                        foods.append(unicode(menu.string.strip().replace(";","").replace('"', "'")))
                         menuNr += 1
                     foods = dict(zip(foods,prices))
                     conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
@@ -54,7 +54,7 @@ def updateDb():
                         conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf-8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
                         foods = []
                         for food in menu.findAll('a'):
-                            foods.append(unicode(food.get_text().replace(";","")))
+                            foods.append(unicode(food.get_text().replace(";","").replace('"', "'")))
                         foods = dict(zip(foods,prices))
                         conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
                         dayNr += 1
