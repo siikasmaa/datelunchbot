@@ -45,18 +45,18 @@ def updateDb():
             for day in soup.findAll('div', class_='lunch-item-food'):
                 prices = []
                 for price in day.findAll('td', class_='price-student'):
-                    prices.append((price.get_text()[:4 if len(price.get_text()) > 2 else 0:1] + 'e'))
+                    prices.append(unicode(price.get_text()[:4 if len(price.get_text()) > 2 else 0:1] + 'e'))
                 dayNr = 0
                 menuNr = 0
                 for menu in day.findAll('table', class_='week-list'):
                     try:
                         print "Inserting new rows"
-                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf-8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
+                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'],wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
                         foods = []
                         for food in menu.findAll('a'):
-                            foods.append(food.get_text().encode('utf8').replace(";",""))
+                            foods.append(unicode(food.get_text().replace(";","")))
                         foods = dict(zip(foods,prices))
-                        conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
+                        conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'], m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
                         dayNr += 1
                     except sql.OperationalError as e:
                         print e
