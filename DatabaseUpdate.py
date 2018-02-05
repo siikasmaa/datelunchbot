@@ -27,7 +27,7 @@ def updateDb():
             for day in soup.findAll('div', class_='accord'):
                 print "Inserting new rows"
                 try:
-                    conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'],wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
+                    conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf-8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
                     prices = []
                     foods = []
                     menuNr = 0
@@ -37,7 +37,7 @@ def updateDb():
                         foods.append(unicode(menu.string.strip().replace(";","")))
                         menuNr += 1
                     foods = dict(zip(foods,prices))
-                    conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'], m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
+                    conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
                     dayNr += 1
                 except sql.OperationalError as e:
                     print e
@@ -51,12 +51,12 @@ def updateDb():
                 for menu in day.findAll('table', class_='week-list'):
                     try:
                         print "Inserting new rows"
-                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'],wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
+                        conn.execute("INSERT OR IGNORE INTO {r} (WEEKDAY, WEEK, ID, YEAR) VALUES ({wd}, {w}, {id}, {y});".format(r=restaurants[x]['title'].encode('utf-8'),wd="'"+dayName[dayNr]+"'",w=week,y=year,id=int(str(dayNr)+str(week)+str(year))));
                         foods = []
                         for food in menu.findAll('a'):
                             foods.append(unicode(food.get_text().replace(";","")))
                         foods = dict(zip(foods,prices))
-                        conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'], m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
+                        conn.execute("UPDATE {r} SET MENU = {m} WHERE ID = {id};".format(r=restaurants[x]['title'].encode('utf-8'), m='"'+str(foods).encode('utf-8', 'strict')+'"', wd="'"+dayName[dayNr]+"'",w=week,id=int(str(dayNr)+str(week)+str(year))))
                         dayNr += 1
                     except sql.OperationalError as e:
                         print e
