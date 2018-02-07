@@ -11,16 +11,6 @@ from telepot.loop import MessageLoop
 from telepot.delegate import per_inline_from_id, create_open, pave_event_space
 from telepot.helper import InlineUserHandler, AnswererMixin
 
-week = datetime.date.today().isocalendar()[1] if (datetime.datetime.today().weekday() < 5) else (datetime.date.today().isocalendar()[1] + 1)
-year = datetime.date.today().isocalendar()[0]
-restaurants = {}
-
-with open('restaurants.json') as json_data:
-    restaurants = json.load(json_data)
-    restaurants
-
-dayName = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-
 class InlineHandler(InlineUserHandler, AnswererMixin):
     def __init__(self, *args, **kwargs):
         super(InlineHandler, self).__init__(*args, **kwargs)
@@ -56,6 +46,8 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
         logging.info(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
 
 def main(loggingfile,TOKEN):
+    with open('restaurants.json') as json_data:
+        restaurants = json.load(json_data)
     logging.basicConfig(filename=loggingfile+'.log',format='%(asctime)-15s %(message)s')
     bot = telepot.DelegatorBot(TOKEN, [pave_event_space()(per_inline_from_id(), create_open, InlineHandler, timeout=10),])
     bot.message_loop(run_forever='Listening ...')
