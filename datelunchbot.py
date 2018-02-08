@@ -13,6 +13,8 @@ from telepot.delegate import per_inline_from_id, create_open, pave_event_space
 from telepot.helper import InlineUserHandler, AnswererMixin
 
 restaurants = {}
+with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_data:
+    restaurants = json.load(json_data)
 
 class InlineHandler(InlineUserHandler, AnswererMixin):
     def __init__(self, *args, **kwargs):
@@ -43,8 +45,6 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
         logging.info(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
 
 def main(loggingfile,TOKEN):
-    with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_data:
-        restaurants = json.load(json_data)
     logging.basicConfig(filename=loggingfile+'.log',format='%(asctime)-15s %(message)s')
     bot = telepot.DelegatorBot(TOKEN, [pave_event_space()(per_inline_from_id(), create_open, InlineHandler, timeout=1),])
     bot.message_loop(run_forever='Listening ...')

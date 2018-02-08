@@ -6,15 +6,10 @@ class DBHelper:
         try:
             self.dbname = dbname
             self.conn = sql.connect(dbname)
+            print "Connection to {n} established".format(n=dbname)
             return self
         except sql.OperationalError as e:
-            print e
-
-    def __init__(self, dbname="menus.db"):
-        try:
-            self.dbname = dbname
-            self.conn = sql.connect(dbname)
-        except sql.OperationalError as e:
+            self.conn.rollback()
             print e
 
     def setup(self, name):
@@ -23,14 +18,16 @@ class DBHelper:
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
+            self.conn.rollback()
             print e
 
     def add_item(self, name, args):
         try:
-            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES ({a});".format(n=name, a=args)
-            self.conn.execute(stmt)
+            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES (?);".format(n=name)
+            self.conn.execute(stmt, (args))
             self.conn.commit()
         except sql.OperationalError as e:
+            self.conn.rollback()
             print e
 
     def update_item(self, name, menu, id):
@@ -39,6 +36,7 @@ class DBHelper:
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
+            self.conn.rollback()
             print e
 
     def delete_item(self, item_text):
@@ -48,6 +46,7 @@ class DBHelper:
             self.conn.execute(stmt, args)
             self.conn.commit()
         except sql.OperationalError as e:
+            self.conn.rollback()
             print e
 
     def select_items(self, name, ide):
@@ -60,5 +59,6 @@ class DBHelper:
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             self.conn.close()
+            print "Connection to {n} closed succesfully".format(n=self.dbname)
         except sql.OperationalError as e:
             print e

@@ -6,22 +6,26 @@ import json
 import re
 import io
 from bs4 import BeautifulSoup
+from dbhelper import DBHelper
 from restaurant import Restaurant
 
-def update_db():
-    for item in restaurants:
-        res = Restaurant(item)
-        res.setup_db()
-        if res.type == 'unica':
-            unica_parser(res.query(), res)
-        if res.type == 'studentlunch':
-            studentlunch_parser(res.query(), res)
+db = DBHelper()
 
-def unica_parser(parsed_page, res):
+def update_db():
+    with DBHelper() as db:
+        for item in restaurants:
+            res = Restaurant(item)
+            db.setup(res.title)
+            if res.type == 'unica':
+                unica_parser(res.query(), res, db)
+            if res.type == 'studentlunch':
+                studentlunch_parser(res.query(), res, db)
+            print "Database for {r} setup succesfully".format(r=res.title)
+
+def unica_parser(parsed_page, res, db):
     day_nr = 0
     for day in parsed_page.findAll('div', class_='accord'):
-        print "Inserting new rows"
-        res.add_db_item("{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
+        db.add_item(res.title, "{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
         prices = []
         foods = []
         menu_nr = 0
@@ -31,10 +35,10 @@ def unica_parser(parsed_page, res):
             foods.append(unicode(re.sub('''[;"'/-]''','', menu.string)))
             menu_nr += 1
         foods = dict(zip(foods,prices))
-        res.update_db_item(str(foods).encode('utf-8', 'strict'), int(str(day_nr)+str(week)+str(year)))
+        db.update_item(res.title, '"'+str(foods).encode('utf-8', 'strict')+'"', int(str(day_nr)+str(week)+str(year)))
         day_nr += 1
 
-def studentlunch_parser(parsed_page, res):
+def studentlunch_parser(parsed_page, res, db):
     for day in parsed_page.findAll('div', class_='lunch-item-food'):
         prices = []
         day_nr = 0
@@ -42,13 +46,12 @@ def studentlunch_parser(parsed_page, res):
         for price in day.findAll('td', class_='price-student'):
             prices.append(unicode(price.get_text()[:4 if len(price.get_text()) > 2 else 0:1] + 'e'))
         for menu in day.findAll('table', class_='week-list'):
-            print "Inserting new rows"
-            res.add_db_item("{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
+            db.add_item(res.title, "{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
             foods = []
             for food in menu.findAll('a'):
                 foods.append(unicode(re.sub('''[;"'/-]''','',food.get_text())))
             foods = dict(zip(foods,prices))
-            res.update_db_item(str(foods).encode('utf-8', 'strict'), int(str(day_nr)+str(week)+str(year)))
+            db.update_item(res.title, '"'+str(foods).encode('utf-8', 'strict')+'"', int(str(day_nr)+str(week)+str(year)))
             day_nr += 1
 
 if __name__ == "__main__":
