@@ -32,7 +32,6 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             try:
                 for i in range(len(restaurants)):
                     lis = ""
-                    i=0
                     cursor = db.select_items(restaurants[i]['title'].encode('utf-8'), ide)
                     for key, value in ast.literal_eval(cursor[0][0]).iteritems():
                         lis += key + "\n " + value + "\n\n"
