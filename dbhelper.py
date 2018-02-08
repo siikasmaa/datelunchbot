@@ -1,35 +1,64 @@
-import sqlite3
+import sqlite3 as sql
 import os
 
 class DBHelper:
+    def __enter__(self, dbname="menus.db"):
+        try:
+            self.dbname = dbname
+            self.conn = sql.connect(dbname)
+            return self
+        except sql.OperationalError as e:
+            print e
+
     def __init__(self, dbname="menus.db"):
-        self.dbname = dbname
-        self.conn = sqlite3.connect(dbname)
+        try:
+            self.dbname = dbname
+            self.conn = sql.connect(dbname)
+        except sql.OperationalError as e:
+            print e
 
     def setup(self, name):
-        stmt = "CREATE TABLE IF NOT EXISTS {n} (ID INT UNIQUE, YEAR INT, WEEK INT, WEEKDAY TEXT, MENU TEXT);".format(n=name)
-        self.conn.execute(stmt)
-        self.conn.commit()
+        try:
+            stmt = "CREATE TABLE IF NOT EXISTS {n} (ID INT UNIQUE, YEAR INT, WEEK INT, WEEKDAY TEXT, MENU TEXT);".format(n=name)
+            self.conn.execute(stmt)
+            self.conn.commit()
+        except sql.OperationalError as e:
+            print e
 
     def add_item(self, name, args):
-        stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES ({a});".format(n=name, a=args)
-        self.conn.execute(stmt)
-        self.conn.commit()
+        try:
+            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES ({a});".format(n=name, a=args)
+            self.conn.execute(stmt)
+            self.conn.commit()
+        except sql.OperationalError as e:
+            print e
 
     def update_item(self, name, menu, id):
-        stmt = "UPDATE {n} SET MENU = {m} WHERE ID = {i};".format(n=name, m=menu, i=id)
-        self.conn.execute(stmt)
-        self.conn.commit()
+        try:
+            stmt = "UPDATE {n} SET MENU = {m} WHERE ID = {i};".format(n=name, m=menu, i=id)
+            self.conn.execute(stmt)
+            self.conn.commit()
+        except sql.OperationalError as e:
+            print e
 
     def delete_item(self, item_text):
-        stmt = "DELETE FROM items WHERE description = (?)"
-        args = (item_text)
-        self.conn.execute(stmt, args)
-        self.conn.commit()
+        try:
+            stmt = "DELETE FROM items WHERE description = (?)"
+            args = (item_text)
+            self.conn.execute(stmt, args)
+            self.conn.commit()
+        except sql.OperationalError as e:
+            print e
 
     def select_items(self, name, ide):
-        stmt = 'SELECT MENU, WEEKDAY, WEEK FROM {n} WHERE ID = {i}'.format(n=name,i=ide)
-        return self.conn.execute(stmt).fetchall()
+        try:
+            stmt = 'SELECT MENU, WEEKDAY, WEEK FROM {n} WHERE ID = {i}'.format(n=name,i=ide)
+            return self.conn.execute(stmt).fetchall()
+        except sql.OperationalError as e:
+            print e
 
-    def __exit__(self):
-        self.conn.close()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self.conn.close()
+        except sql.OperationalError as e:
+            print e

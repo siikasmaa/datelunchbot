@@ -15,7 +15,7 @@ class Restaurant:
         try:
             db.setup(self.title)
             print "Table for {r} created successfully".format(r=self.title)
-        except sql.OperationalError as e:
+        except Exception as e:
             print "Error creating table for {r}".format(r=self.title)
             print e
 
@@ -37,3 +37,6 @@ class Restaurant:
 
     def update_db_item(self, menu, row_id):
         db.update_item(self.title,'"'+menu+'"', row_id)
+
+    def __exit__(self):
+        db.__exit__()

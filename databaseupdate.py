@@ -26,7 +26,7 @@ def unica_parser(parsed_page, res):
         foods = []
         menu_nr = 0
         for price in day.findAll('td', class_='price quiet'):
-            prices.append(unicode(re.sub('[;\n 	]', '', price.string.strip().replace("'",""))))
+            prices.append(unicode(re.sub('[;\n\t]', '', price.string.strip().replace("'",""))))
         for menu in day.findAll('td', class_='lunch'):
             foods.append(unicode(re.sub('''[;"'/-]''','', menu.string)))
             menu_nr += 1
