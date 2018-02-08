@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 class DBHelper:
     def __init__(self, dbname="menus.db"):
@@ -22,10 +23,13 @@ class DBHelper:
 
     def delete_item(self, item_text):
         stmt = "DELETE FROM items WHERE description = (?)"
-        args = (item_text, )
+        args = (item_text)
         self.conn.execute(stmt, args)
         self.conn.commit()
 
-    def get_items(self):
-        stmt = "SELECT description FROM items"
-        return [x[0] for x in self.conn.execute(stmt)]
+    def select_items(self, name, ide):
+        stmt = 'SELECT MENU, WEEKDAY, WEEK FROM {n} WHERE ID = {i}'.format(n=name,i=ide)
+        return self.conn.execute(stmt).fetchall()
+
+    def __exit__(self):
+        self.conn.close()
