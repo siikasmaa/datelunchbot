@@ -23,8 +23,8 @@ class DBHelper:
 
     def add_item(self, name, args):
         try:
-            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES (?,?,?,?);".format(n=name)
-            self.conn.execute(stmt, (args))
+            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES ({a});".format(n=name, a=args)
+            self.conn.execute(stmt
             self.conn.commit()
         except sql.OperationalError as e:
             self.conn.rollback()
