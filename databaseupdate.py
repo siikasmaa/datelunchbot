@@ -39,20 +39,22 @@ def unica_parser(parsed_page, res, db):
         day_nr += 1
 
 def studentlunch_parser(parsed_page, res, db):
-    for day in parsed_page.findAll('div', class_='lunch-item-food'):
+    day_nr = 0
+    for day in parsed_page.findAll('table', class_='week-list'):
         prices = []
-        day_nr = 0
+        price_string = "Hinta: "
+        foods = []
         menu_nr = 0
-        for price in day.findAll('td', class_='price-student'):
-            prices.append(unicode(price.get_text()[:4 if len(price.get_text()) > 2 else 0:1] + 'e'))
-        for menu in day.findAll('table', class_='week-list'):
-            db.add_item(res.title, "{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
-            foods = []
-            for food in menu.findAll('a'):
+        for table in day.findAll('tr'):
+            for price in table.findAll('td', class_=re.compile('price-*')):
+                price_string += price.get_text() + " / "
+            prices.append(unicode(price_string + " €".decode('utf8')))
+            for food in table.findAll('td', class_='food'):
+                db.add_item(res.title, "{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
                 foods.append(unicode(re.sub('''[;"'/-]''','',food.get_text())))
-            foods = dict(zip(foods,prices))
-            db.update_item(res.title, '"'+str(foods).encode('utf-8', 'strict')+'"', int(str(day_nr)+str(week)+str(year)))
-            day_nr += 1
+        foods = dict(zip(foods,prices))
+        db.update_item(res.title, '"'+str(foods).encode('utf-8', 'strict')+'"', int(str(day_nr)+str(week)+str(year)))
+        day_nr += 1
 
 if __name__ == "__main__":
     week = datetime.date.today().isocalendar()[1] if (datetime.datetime.today().weekday() < 5) else (datetime.date.today().isocalendar()[1] + 1)
