@@ -1,11 +1,29 @@
 # DateLunchBot
-Simple Python Telegram bot for fetching lunches for students in Turku.
+Simple Python Telegram bot for fetching lunch menus in Turku.
 
-You can try it out at https://telegram.me/datelunchbot
+You can try it live at https://telegram.me/datelunchbot
+
+Currently there are 8 restaurants available:
+
+Restaurant | Studentlunch/Unica |
+---------- | ---------- |
+Arken | Studentlunch
+Assarin ullakko | Unica
+Delica | Unica
+Dental | Unica
+Fänriken | Studentlunch
+Gado | Studentlunch
+Galilei | Unica
+Kåren | Studentlunch
+
+##Installation
+-------------
+
+DateLunchBot uses a database to store the menus. The SQLite database for the menus can be created with databaseupdate.py
 
 In order to run DateLunchBot, you need a Telegram Bot Token from [Botfather](https://telegram.me/botfather)
 
-Launch DateLunchBot from command line by using the following command:
+Launch DateLunchBot from the command line by using the following command:
 ```
-python DateLunchBot.py ***YOUR TOKEN***
+python datelunchbot.py -t ***YOUR TOKEN*** -f ***LOG FILENAME***
 ```
