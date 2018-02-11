@@ -7,6 +7,8 @@ import telepot
 import json
 import ast
 import io
+import geopy.distance
+from operator import itemgetter
 from telepot.loop import MessageLoop
 from dbhelper import DBHelper
 from telepot.delegate import per_inline_from_id, create_open, pave_event_space
@@ -21,8 +23,15 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
         super(InlineHandler, self).__init__(*args, **kwargs)
 
     def on_inline_query(self, msg):
-        week = datetime.date.today().isocalendar()[1] if (datetime.datetime.today().weekday() < 5) else (datetime.date.today().isocalendar()[1] + 1)
+        week = datetime.date.today().isocalendar()[1]
         year = datetime.date.today().isocalendar()[0]
+        global restaurants
+        if 'location' in msg:
+            coords_1 = (msg['location']['latitude'], msg['location']['longitude'])
+            for res in restaurants:
+                coords_2 = (res['lat'], res['lng'])
+                res['distance'] = geopy.distance.vincenty(coords_1, coords_2).m
+            restaurants = sorted(restaurants, key=itemgetter('distance'))
 
         def compute_answer():
             query_id, from_id, query_string = telepot.glance(msg, flavor='inline_query')
@@ -42,7 +51,10 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
 
     def on_chosen_inline_result(self, msg):
         result_id, from_id, query_string = telepot.glance(msg, flavor='chosen_inline_result')
-        logging.info(self.id, ':', 'Chosen Inline Result:', result_id, from_id, query_string)
+        logging.info(msg)
+
+def distance(p1, p2):
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 def main(loggingfile,TOKEN):
     logging.basicConfig(filename=loggingfile+'.log',format='%(asctime)-15s %(message)s')

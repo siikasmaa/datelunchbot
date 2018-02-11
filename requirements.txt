@@ -12,3 +12,5 @@ logging
 argparse
 telepot
 ast
+geopy
+operator
