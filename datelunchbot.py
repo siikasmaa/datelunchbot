@@ -11,12 +11,55 @@ import geopy.distance
 from operator import itemgetter
 from telepot.loop import MessageLoop
 from dbhelper import DBHelper
-from telepot.delegate import per_inline_from_id, create_open, pave_event_space
-from telepot.helper import InlineUserHandler, AnswererMixin
+from telepot.namedtuple import KeyboardButton, ReplyKeyboardRemove
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+from telepot.delegate import per_inline_from_id, create_open, pave_event_space, per_chat_id, include_callback_query_chat_id
+from telepot.helper import InlineUserHandler, AnswererMixin, ChatHandler
 
 restaurants = {}
 with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_data:
     restaurants = json.load(json_data)
+message_with_inline_keyboard = None
+
+class MessageHandler(ChatHandler):
+    def __init__(self, *args, **kwargs):
+        super(MessageHandler, self).__init__(*args, **kwargs)
+
+    def on_chat_message(self, msg):
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        if content_type != 'text':
+            return
+        command = msg['text'].lower()
+
+        if command == '/language':
+            markup = InlineKeyboardMarkup(inline_keyboard=[
+             [InlineKeyboardButton(text='Swedish', callback_data='swedish')],
+             [InlineKeyboardButton(text='Finnish', callback_data='finnish')],
+             [InlineKeyboardButton(text='English', callback_data='english')]
+                 ])
+
+            global message_with_inline_keyboard
+            message_with_inline_keyboard = self.sender.sendMessage('Select language for menus', reply_markup=markup)
+
+        elif command == 'h':
+            markup = ReplyKeyboardRemove()
+            self.sender.sendMessage('Hide custom keyboard', reply_markup=markup)
+
+    def _close(self, from_id, data):
+        with DBHelper() as db:
+            db.setup("Preferences", "ID INT UNIQUE, LANGUAGE TEXT")
+            db.add_item("Preferences", "ID, LANGUAGE", "{f}, '{d}'".format(f=from_id,d=data))
+
+    def on_callback_query(self, msg):
+        query_id, from_id, data = telepot.glance(msg, flavor='callback_query')
+        if data == 'swedish':
+            self.sender.sendMessage('Swedish selected')
+            data = 'se'
+        elif data == 'finnish':
+            self.sender.sendMessage('Finnish selected')
+        elif data == 'english':
+            self.sender.sendMessage('English selected')
+        self._close(from_id, data[:2])
 
 class InlineHandler(InlineUserHandler, AnswererMixin):
     def __init__(self, *args, **kwargs):
@@ -39,14 +82,20 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             max_date_wo_wknd = datetime.datetime.today().weekday() if (datetime.datetime.today().weekday() < 6) else 0
             ide = int(str(max_date_wo_wknd)+str(week)+str(year))
             articles = []
+            lang = 'en'
             with DBHelper() as db:
+                if db.select_lang(msg['from']['id']):
+                    lang = db.select_lang(msg['from']['id'])[0][0]
                 for i in range(len(restaurants)):
                     lis = ""
-                    cursor = db.select_items(restaurants[i]['title'].encode('utf-8'), ide)
+                    cursor = db.select_items(lang.upper(), restaurants[i]['title'].encode('utf-8'), ide)
+                    if not cursor[0][0]:
+                        cursor = db.select_items("EN", restaurants[i]['title'].encode('utf-8'), ide)
                     for key, value in ast.literal_eval(cursor[0][0]).iteritems():
                         lis += key + "\n " + value + "\n\n"
-                    articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'url': restaurants[i]['link'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
+                    articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
             return articles
+
         self.answerer.answer(msg, compute_answer)
 
     def on_chosen_inline_result(self, msg):
@@ -58,7 +107,8 @@ def distance(p1, p2):
 
 def main(loggingfile,TOKEN):
     logging.basicConfig(filename=loggingfile+'.log',format='%(asctime)-15s %(message)s')
-    bot = telepot.DelegatorBot(TOKEN, [pave_event_space()(per_inline_from_id(), create_open, InlineHandler, timeout=1),])
+    bot = telepot.DelegatorBot(TOKEN, [pave_event_space()(per_inline_from_id(), create_open, InlineHandler, timeout=1), include_callback_query_chat_id(pave_event_space())(
+        per_chat_id(), create_open, MessageHandler, timeout=1)])
     bot.message_loop(run_forever='Listening ...')
 
 if __name__ == "__main__":

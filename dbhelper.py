@@ -12,27 +12,27 @@ class DBHelper:
             self.conn.rollback()
             print e
 
-    def setup(self, name):
+    def setup(self, name, cols):
         try:
-            stmt = "CREATE TABLE IF NOT EXISTS {n} (ID INT UNIQUE, YEAR INT, WEEK INT, WEEKDAY TEXT, MENU TEXT);".format(n=name)
+            stmt = "CREATE TABLE IF NOT EXISTS {n} ({c});".format(n=name, c=cols)
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
             self.conn.rollback()
             print e
 
-    def add_item(self, name, args):
+    def add_item(self, name, cols, args):
         try:
-            stmt = "INSERT OR IGNORE INTO {n} (WEEKDAY, WEEK, ID, YEAR) VALUES ({a});".format(n=name, a=args)
+            stmt = "INSERT OR REPLACE INTO {n} ({c}) VALUES ({a});".format(n=name, c=cols, a=args)
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
             self.conn.rollback()
             print e
 
-    def update_item(self, name, menu, id):
+    def update_item(self, name, lang, menu, id):
         try:
-            stmt = "UPDATE {n} SET MENU = {m} WHERE ID = {i};".format(n=name, m=menu, i=id)
+            stmt = "UPDATE {n} SET {l} = {m} WHERE ID = {i};".format(n=name, l="MENU"+lang, m=menu, i=id)
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
@@ -49,9 +49,16 @@ class DBHelper:
             self.conn.rollback()
             print e
 
-    def select_items(self, name, ide):
+    def select_items(self, lang, name, ide):
         try:
-            stmt = 'SELECT MENU, WEEKDAY, WEEK FROM {n} WHERE ID = {i}'.format(n=name,i=ide)
+            stmt = 'SELECT MENU{l}, WEEKDAY, WEEK FROM {n} WHERE ID = {i}'.format(n=name, l=lang, i=ide)
+            return self.conn.execute(stmt).fetchall()
+        except sql.OperationalError as e:
+            print e
+
+    def select_lang(self, ide):
+        try:
+            stmt = 'SELECT LANGUAGE FROM Preferences WHERE ID = {i}'.format(i=ide)
             return self.conn.execute(stmt).fetchall()
         except sql.OperationalError as e:
             print e
