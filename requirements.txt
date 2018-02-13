@@ -1,16 +1,4 @@
-urllib2
 bs4
-sqlite3
-os
-io
-re
-json
-calendar
-datetime
-sys
-logging
-argparse
 telepot
-ast
 geopy
-operator
+lxml

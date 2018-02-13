@@ -29,12 +29,10 @@ def unica_parser(parsed_page, lang, res, db):
         db.add_item(res.title, "WEEKDAY, WEEK, ID, YEAR", "{wd}, {w}, {id}, {y}".format(wd="'"+calendar.day_name[day_nr]+"'",w=week,y=year,id=int(str(day_nr)+str(week)+str(year))))
         prices = []
         foods = []
-        menu_nr = 0
         for price in day.findAll('td', class_='price quiet'):
             prices.append(unicode(re.sub('[;\n\t]', '', price.string.strip().replace("'",""))))
         for menu in day.findAll('td', class_='lunch'):
             foods.append(unicode(re.sub('''["'/-]''','', menu.string.replace(';',':'))))
-            menu_nr += 1
         foods = dict(zip(foods,prices))
         db.update_item(res.title, lang.upper(), '"'+str(foods).encode('utf-8', 'strict')+'"', int(str(day_nr)+str(week)+str(year)))
         day_nr += 1
