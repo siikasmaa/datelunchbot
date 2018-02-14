@@ -23,27 +23,17 @@ class DBHelper:
 
     def add_item(self, name, cols, args):
         try:
-            stmt = "INSERT OR REPLACE INTO {n} ({c}) VALUES ({a});".format(n=name, c=cols, a=args)
+            stmt = "INSERT OR IGNORE INTO {n} ({c}) VALUES ({a});".format(n=name, c=cols, a=args)
             self.conn.execute(stmt)
             self.conn.commit()
         except sql.OperationalError as e:
             self.conn.rollback()
             print e
 
-    def update_item(self, name, lang, menu, id):
+    def update_item(self, name, col, value, ide):
         try:
-            stmt = "UPDATE {n} SET {l} = {m} WHERE ID = {i};".format(n=name, l="MENU"+lang, m=menu, i=id)
+            stmt = "UPDATE {n} SET {c} = {v} WHERE ID = {i};".format(n=name, c=col, v=value, i=ide)
             self.conn.execute(stmt)
-            self.conn.commit()
-        except sql.OperationalError as e:
-            self.conn.rollback()
-            print e
-
-    def delete_item(self, item_text):
-        try:
-            stmt = "DELETE FROM items WHERE description = (?)"
-            args = (item_text)
-            self.conn.execute(stmt, args)
             self.conn.commit()
         except sql.OperationalError as e:
             self.conn.rollback()

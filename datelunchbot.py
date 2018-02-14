@@ -9,14 +9,12 @@ import ast
 import io
 import geopy.distance
 from operator import itemgetter
-from telepot.loop import MessageLoop
 from dbhelper import DBHelper
 from telepot.namedtuple import KeyboardButton, ReplyKeyboardRemove
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from telepot.delegate import per_inline_from_id, create_open, pave_event_space, per_chat_id, include_callback_query_chat_id
 from telepot.helper import InlineUserHandler, AnswererMixin, ChatHandler
 
-restaurants = {}
 with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_data:
     restaurants = json.load(json_data)
 message_with_inline_keyboard = None
@@ -29,6 +27,7 @@ class MessageHandler(ChatHandler):
         content_type, chat_type, chat_id = telepot.glance(msg)
         if content_type != 'text':
             return
+
         command = msg['text'].lower()
 
         if command == '/language':
@@ -48,7 +47,8 @@ class MessageHandler(ChatHandler):
     def _close(self, from_id, data):
         with DBHelper() as db:
             db.setup("Preferences", "ID INT UNIQUE, LANGUAGE TEXT")
-            db.add_item("Preferences", "ID, LANGUAGE", "{f}, '{d}'".format(f=from_id,d=data))
+            db.add_item("Preferences", "ID, LANGUAGE", "{f}, '{d}'".format(f=from_id, d=data))
+            db.update_item("Preferences", "LANGUAGE", "'{d}'".format(d=data), from_id)
 
     def on_callback_query(self, msg):
         query_id, from_id, data = telepot.glance(msg, flavor='callback_query')
@@ -60,6 +60,7 @@ class MessageHandler(ChatHandler):
         elif data == 'english':
             self.sender.sendMessage('English selected')
         self._close(from_id, data[:2])
+
 
 class InlineHandler(InlineUserHandler, AnswererMixin):
     def __init__(self, *args, **kwargs):
