@@ -89,9 +89,9 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
                     lang = db.select_lang(msg['from']['id'])[0][0]
                 for i in range(len(restaurants)):
                     lis = ""
-                    cursor = db.select_items(lang.upper(), restaurants[i]['title'].encode('utf-8'), ide)
+                    cursor = db.select_items(lang.upper(), restaurants[i]['id'].encode('utf-8'), ide)
                     if not cursor[0][0]:
-                        cursor = db.select_items("EN", restaurants[i]['title'].encode('utf-8'), ide)
+                        cursor = db.select_items("EN", restaurants[i]['id'].encode('utf-8'), ide)
                     for key, value in ast.literal_eval(cursor[0][0]).iteritems():
                         lis += key + "\n " + value + "\n\n"
                     articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
