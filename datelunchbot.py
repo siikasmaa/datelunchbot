@@ -41,7 +41,7 @@ class MessageHandler(ChatHandler):
                  ])
 
             global message_with_inline_keyboard
-            message_with_inline_keyboard = self.sender.sendMessage('Select language for menus', reply_markup=markup)
+            message_with_inline_keyboard = self.sender.sendMessage('Select language for menus. Note: selected restaurant may not support your language!', reply_markup=markup)
 
         elif command == 'h':
             markup = ReplyKeyboardRemove()
