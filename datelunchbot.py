@@ -86,25 +86,27 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             start = time.time()
             query_id, from_id, query_string = telepot.glance(msg, flavor='inline_query')
             stats.increment('user.'+str(from_id)+'.call')
-            max_date_wo_wknd = datetime.datetime.today().weekday() if (datetime.datetime.today().weekday() < 6) else 0
-            ide = int(str(max_date_wo_wknd)+str(week)+str(year))
+            ide = int(str(datetime.datetime.today().weekday())+str(week)+str(year))
             articles = []
             lang = 'en'
             with DBHelper() as db:
+                lang = "EN"
                 if db.select_lang(msg['from']['id']):
                     lang = db.select_lang(msg['from']['id'])[0][0]
                 for i in range(len(restaurants)):
-                    lis = ""
+                    lis = "Menu not available"
                     cursor = db.select_items(lang.upper(), restaurants[i]['id'].encode('utf-8'), ide)
-                    if not cursor[0][0]:
-                        cursor = db.select_items("EN", restaurants[i]['id'].encode('utf-8'), ide)
-                    for key, value in ast.literal_eval(cursor[0][0]).iteritems():
-                        lis += key + "\n " + value + "\n\n"
+                    day_name = datetime.datetime.now().strftime("%A")
+                    if cursor and cursor[0][0]:
+                        day_name = cursor[0][1]
+                        lis = ""
+                        for key, value in ast.literal_eval(cursor[0][0]).iteritems():
+                            lis += key + "\n " + value + "\n\n"
                     if 'query' in msg:
                         if msg['query'].lower() in restaurants[i]['title'].lower():
-                            articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
+                            articles.append({'id': restaurants[i]['id'], 'description': restaurants[i]['open'][datetime.datetime.today().weekday()], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + day_name + ', week: ' + str(week) + ' \n' + lis})
                     else:
-                        articles.append({'id': restaurants[i]['id'], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + cursor[0][1] + ', week: ' + str(cursor[0][2]) + ' \n' + lis})
+                        articles.append({'id': restaurants[i]['id'], 'description': restaurants[i]['open'][datetime.datetime.today().weekday()], 'type': 'article', 'title': restaurants[i]['title'].encode('utf-8'), 'thumb_url': restaurants[i]['thumb'], 'message_text': restaurants[i]['title'] + ', ' + day_name + ', week: ' + str(week) + ' \n' + lis})
             stats.histogram('user.query.time', time.time() - start)
             return articles
 
