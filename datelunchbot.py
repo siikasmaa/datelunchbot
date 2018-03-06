@@ -20,6 +20,7 @@ with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_da
     restaurants = json.load(json_data)
 message_with_inline_keyboard = None
 stats = ThreadStats()
+db_file = "menus.db"
 
 class MessageHandler(ChatHandler):
     def __init__(self, *args, **kwargs):
@@ -49,7 +50,7 @@ class MessageHandler(ChatHandler):
 
     def _close(self, from_id, data):
         stats.increment('language.'+data+'.selected')
-        with DBHelper() as db:
+        with DBHelper(db_file) as db:
             db.setup("Preferences", "ID INT UNIQUE, LANGUAGE TEXT")
             db.add_item("Preferences", "ID, LANGUAGE", "{f}, '{d}'".format(f=from_id, d=data))
             db.update_item("Preferences", "LANGUAGE", "'{d}'".format(d=data), from_id)
@@ -89,7 +90,7 @@ class InlineHandler(InlineUserHandler, AnswererMixin):
             ide = int(str(datetime.datetime.today().weekday())+str(week)+str(year))
             articles = []
             lang = 'en'
-            with DBHelper() as db:
+            with DBHelper(db_file) as db:
                 lang = "EN"
                 if db.select_lang(msg['from']['id']):
                     lang = db.select_lang(msg['from']['id'])[0][0]
@@ -131,6 +132,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--file', type=str, help="Filename for logfile.")
     parser.add_argument('-a', '--api', type=str, help="Datadog api_key.")
     parser.add_argument('-p', '--app', type=str, help="Datadog app_key.")
+    parser.add_argument('-d', '--db', type=str, help="Database file location.")
     args = parser.parse_args()
     if (args.api != None and args.app != None):
         options = {
@@ -141,4 +143,6 @@ if __name__ == "__main__":
         stats.start()
     else:
         stats.start(disabled=True)
+    if (args.db != None):
+        db_file = args.db
     main(args.file,args.token)

@@ -1,12 +1,18 @@
 import sqlite3 as sql
 import os
 
-class DBHelper:
-    def __enter__(self, dbname="menus.db"):
+class DBHelper():
+    def __init__(self, dbname):
         try:
             self.dbname = dbname
-            self.conn = sql.connect(dbname)
-            print "Connection to {n} established".format(n=dbname)
+            self.conn = sql.connect(self.dbname)
+            print "Connection to {n} established".format(n=self.dbname)
+        except sql.OperationalError as e:
+            self.conn.rollback()
+            print e
+
+    def __enter__(self):
+        try:
             return self
         except sql.OperationalError as e:
             self.conn.rollback()

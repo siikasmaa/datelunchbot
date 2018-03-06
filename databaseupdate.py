@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys, os
+import argparse
 import datetime
 import calendar
 import json
@@ -9,10 +10,10 @@ from bs4 import BeautifulSoup
 from dbhelper import DBHelper
 from restaurant import Restaurant
 
-db = DBHelper()
+db_file = "menus.db"
 
-def update_db():
-    with DBHelper() as db:
+def update_db(db_file):
+    with DBHelper(db_file) as db:
         for item in restaurants:
             res = Restaurant(item)
             db.setup(res.id, "ID INT UNIQUE, YEAR INT, WEEK INT, WEEKDAY TEXT, MENUFI TEXT, MENUSE TEXT, MENUEN TEXT")
@@ -56,8 +57,13 @@ def studentlunch_parser(parsed_page, lang, res, db):
         day_nr += 1
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--db', type=str, help="Database file location.")
+    args = parser.parse_args()
     week = datetime.date.today().isocalendar()[1]
     year = datetime.date.today().isocalendar()[0]
+    if (args.db != None):
+        db_file = args.db
     with io.open(os.path.abspath("./restaurants.json"), encoding='utf-8') as json_data:
         restaurants = json.load(json_data)
-    update_db()
+    update_db(db_file)
