@@ -3,13 +3,14 @@ Simple Python Telegram bot for fetching lunch menus in Turku.
 
 You can try it live at https://telegram.me/datelunchbot
 
-Currently there are 8 restaurants available:
+Currently there are 9 restaurants available:
 
 Restaurant | Studentlunch/Unica |
 ---------- | ---------- |
 Arken | Studentlunch
 Assarin ullakko | Unica
 Delica | Unica
+Deli Pharma | Unica
 Dental | Unica
 Fänriken | Studentlunch
 Gado | Studentlunch
