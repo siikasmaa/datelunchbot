@@ -17,7 +17,7 @@ Gado | Studentlunch
 Galilei | Unica
 Kåren | Studentlunch
 
-##Installation
+## Installation
 -------------
 
 DateLunchBot uses a database to store the menus. The SQLite database for the menus can be created with databaseupdate.py
