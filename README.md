@@ -1,5 +1,5 @@
-# DateLunchBot
-Simple Python Telegram bot for fetching lunch menus in Turku.
+# LunchBot
+Telegram bot in Python for fetching studentlunch menus in Turku.
 
 You can try it live at https://telegram.me/datelunchbot
 
